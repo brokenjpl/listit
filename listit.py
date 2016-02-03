@@ -15,6 +15,7 @@ def trimit(s, l):
 #########################
 parser = argparse.ArgumentParser(description='CLI Reddit.')
 parser.add_argument('--sr', '--subreddit', required=False, default=False, help="Enter the subreddit (no /r)")
+parser.add_argument('--view', required=False, default=False, help="Pass the id of the post you want to view")
 args = parser.parse_args()
 
 ############################
@@ -38,6 +39,11 @@ if args.sr :
     uri += "/r/" + args.sr
 
 response = requests.get(uri, headers=headers)
+
+##Debug
+f = open('ouput.txt', 'w')
+f.write(response.json())
+f.close()
 
 data = response.json()
 
