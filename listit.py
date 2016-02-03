@@ -6,4 +6,3 @@ data = r.json();
 
 for child in data['data']['children']:
     print "\t", "[", child['data']['id'] , "]", child['data']['title']
-
