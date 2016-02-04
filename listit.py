@@ -16,6 +16,7 @@ def trimit(s, l):
 parser = argparse.ArgumentParser(description='CLI Reddit.')
 parser.add_argument('--sr', '--subreddit', required=False, default=False, help="Enter the subreddit (no /r)")
 parser.add_argument('--view', required=False, default=False, help="Pass the id of the post you want to view")
+parser.add_argument('--comments', required=False, default=False, help="Pass the id of the post to view the comments")
 args = parser.parse_args()
 
 ############################
@@ -37,12 +38,16 @@ headers = {"Authorization": "bearer " + access_token, "User-Agent": "ListItClien
 uri = "https://oauth.reddit.com"
 if args.sr :
     uri += "/r/" + args.sr
+if args.view :
+    uri += "/by_id/"+args.view
+if args.comments :
+    uri += "/comments/"+args.comments[3:]
 
 response = requests.get(uri, headers=headers)
 
 ##Debug
 f = open('ouput.txt', 'w')
-f.write(response.json())
+f.write(response.text)
 f.close()
 
 data = response.json()
@@ -50,8 +55,18 @@ data = response.json()
 ###################
 # Parse and output
 ###################
-list=[]
-for child in data['data']['children']:
-    list.append(["[" + child['data']['id'] + "]", "["+ child['data']['domain']+"]", trimit(child['data']['title'], 150)])
-    #print "\t [" + child['data']['id'] + "]" , "["+ child['data']['domain']+"]\t\t", trimit(child['data']['title'], 150)
-print tabulate(list)
+if args.view:
+    print "############################################"
+    print data['data']['children'][0]['data']['title']
+    print "############################################"
+    print data['data']['children'][0]['data']['selftext']
+    response = requests.get("https://oauth.reddit.com/comments/" + args.view[3:], headers=headers)
+if args.comments:
+
+
+if args.sr:
+    list=[]
+    for child in data['data']['children']:
+        list.append(["[" + child['data']['name'] + "]", "["+ child['data']['domain']+"]", trimit(child['data']['title'], 150)])
+        #print "\t [" + child['data']['id'] + "]" , "["+ child['data']['domain']+"]\t\t", trimit(child['data']['title'], 150)
+    print tabulate(list)
