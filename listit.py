@@ -2,6 +2,7 @@ import requests
 import requests.auth
 import json
 import argparse
+import configparser
 from tabulate import tabulate
 
 #################
@@ -9,6 +10,12 @@ from tabulate import tabulate
 ################
 def trimit(s, l):
     return s if len(s) <= l else s[0:l-3] + '...'
+
+##########################
+# Configs
+##########################
+config = configparser.RawConfigParser()
+config.read('/home/jlevac/.listit/listit.cfg')
 
 ##########################
 #Args
@@ -22,9 +29,8 @@ args = parser.parse_args()
 ############################
 ## OAuth setup
 ###########################
-
-client_auth = requests.auth.HTTPBasicAuth('X126Mp7itJXFgA', '0f_44ETrBetwOFANv9FznSleWn8')
-post_data = {"grant_type": "password", "username": "levacjeep", "password": "hellobob33"}
+client_auth = requests.auth.HTTPBasicAuth(config.get('OAuth', 'key.private'), config.get('OAuth', 'key.public'))
+post_data = {"grant_type": "password", "username": config.get('OAuth', 'reddit.username'), "password": config.get('OAuth', 'reddit.password')}
 headers = {"User-Agent": "ListItClient/0.1 by levacjeep"}
 response = requests.post("https://www.reddit.com/api/v1/access_token", auth=client_auth, data=post_data, headers=headers)
 jsonResponse = response.json()
@@ -56,17 +62,16 @@ data = response.json()
 # Parse and output
 ###################
 if args.view:
-    print "############################################"
-    print data['data']['children'][0]['data']['title']
-    print "############################################"
-    print data['data']['children'][0]['data']['selftext']
+    print("------------------------------------------------------------------------")
+    print(data['data']['children'][0]['data']['title'])
+    print("------------------------------------------------------------------------")
+    print(data['data']['children'][0]['data']['selftext'])
     response = requests.get("https://oauth.reddit.com/comments/" + args.view[3:], headers=headers)
 if args.comments:
-
-
-if args.sr:
+    print("comments")
+if args.sr or (not args.view and not args.comments):
     list=[]
     for child in data['data']['children']:
         list.append(["[" + child['data']['name'] + "]", "["+ child['data']['domain']+"]", trimit(child['data']['title'], 150)])
         #print "\t [" + child['data']['id'] + "]" , "["+ child['data']['domain']+"]\t\t", trimit(child['data']['title'], 150)
-    print tabulate(list)
+    print(tabulate(list))
