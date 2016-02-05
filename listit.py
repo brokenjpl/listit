@@ -15,7 +15,7 @@ def trimit(s, l):
 # Configs
 ##########################
 config = configparser.RawConfigParser()
-config.read('/home/jlevac/.listit/listit.cfg')
+config.read(os.path.expandUser('~') + '.listit/listit.cfg')
 
 ##########################
 #Args
