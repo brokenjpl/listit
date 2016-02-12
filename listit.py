@@ -27,10 +27,11 @@ config.read(os.path.expanduser('~') + '/.listit/listit.cfg')
 #Args
 #########################
 parser = argparse.ArgumentParser(description='CLI Reddit.')
-parser.add_argument('--sr', '--subreddit', required=False, default=False, help="Enter the subreddit (no /r)")
-parser.add_argument('--view', required=False, default=False, help="Pass the id of the post you want to view")
-parser.add_argument('--browser', required=False, default=False, help="Pass the id of the post you want to view in your browser")
-parser.add_argument('--comments', required=False, default=False, help="Pass the id of the post to view the comments")
+parser.add_argument('-sr', '-subreddit', required=False, default=False, help="Enter the subreddit (no /r)")
+parser.add_argument('-view', required=False, default=False, help="Pass the id of the post you want to view")
+parser.add_argument('-browser', required=False, default=False, help="Pass the id of the post you want to view in your browser")
+parser.add_argument('-comments', required=False, default=False, help="Pass the id of the post to view the comments")
+parser.add_argument('-ct', '-comment_tree', required=False, default=False, help="Pass the id of the comment to view the comment tree")
 args = parser.parse_args()
 
 ############################
@@ -60,6 +61,10 @@ response = requests.get(uri, headers=headers)
 
 data = response.json()
 
+##Debug
+f = open('ouput.txt', 'w')
+f.write(response.text)
+f.close()
 ###################
 # Parse and output
 ###################
@@ -76,10 +81,6 @@ if args.comments:
     list=[]
     print("-----------------------------------------------------------------------------------------------")
     for child in data[1]['data']['children'][:3]:
-        ##Debug
-        f = open('ouput.txt', 'w')
-        f.write(response.text)
-        f.close()
         print(Fore.YELLOW + "[" + child['data']['name'] + "] [score: " + str(child['data']['score']) + "] [replies: " + str(len(child['data']['replies'])) +"]" + Style.RESET_ALL)
         print(child['data']['body'])
         print("-----------------------------------------------------------------------------------------------")
@@ -89,3 +90,55 @@ if args.sr or (not args.view and not args.comments):
     for child in data['data']['children']:
         list.append(["[" + child['data']['name'] + "]", "["+ child['data']['domain']+"]", trimit(child['data']['title'], 150)])
     print(tabulate(list))
+
+class ListitAction(object):
+
+
+class ViewAction(ListitAction):
+
+    def __init__(self, view_id):
+        this.view_id = view_id
+        ##########################
+        # Configs
+        ##########################
+        config = configparser.RawConfigParser()
+        config.read(os.path.expanduser('~') + '/.listit/listit.cfg')
+
+        ############################
+        ## OAuth setup
+        ###########################
+        client_auth = requests.auth.HTTPBasicAuth(config.get('OAuth', 'key.private'), config.get('OAuth', 'key.public'))
+        post_data = {"grant_type": "password", "username": config.get('OAuth', 'reddit.username'), "password": config.get('OAuth', 'reddit.password')}
+        headers = {"User-Agent": "ListItClient/0.1 by levacjeep"}
+        response = requests.post("https://www.reddit.com/api/v1/access_token", auth=client_auth, data=post_data, headers=headers)
+        jsonResponse = response.json()
+        access_token = jsonResponse['access_token']
+
+        #############
+        # Action
+        ############
+        headers = {"Authorization": "bearer " + access_token, "User-Agent": "ListItClient/0.1 by levacjeep"}
+
+    def build_uri:
+        return "https://oauth.reddit.com"
+
+    def fetch_response:
+        uri = build_uri()
+        response =  requests.get(uri, headers=headers)
+        return response.json()
+
+    def print(data):
+        list=[]
+        for child in data['data']['children']:
+            list.append(["[" + child['data']['name'] + "]", "["+ child['data']['domain']+"]", trimit(child['data']['title'], 150)])
+        print(tabulate(list))
+
+    def execute:
+        response = fetch_response()
+        print(response)
+
+
+class CommentsAction(ListitAction):
+
+    def __init__(self, view_id):
+        this.view_id = view_id
