@@ -93,11 +93,7 @@ if args.sr or (not args.view and not args.comments):
 
 class ListitAction(object):
 
-
-class ViewAction(ListitAction):
-
     def __init__(self, view_id):
-        this.view_id = view_id
         ##########################
         # Configs
         ##########################
@@ -119,10 +115,10 @@ class ViewAction(ListitAction):
         ############
         headers = {"Authorization": "bearer " + access_token, "User-Agent": "ListItClient/0.1 by levacjeep"}
 
-    def build_uri:
+    def build_uri():
         return "https://oauth.reddit.com"
 
-    def fetch_response:
+    def fetch_response():
         uri = build_uri()
         response =  requests.get(uri, headers=headers)
         return response.json()
@@ -133,10 +129,17 @@ class ViewAction(ListitAction):
             list.append(["[" + child['data']['name'] + "]", "["+ child['data']['domain']+"]", trimit(child['data']['title'], 150)])
         print(tabulate(list))
 
-    def execute:
+    def execute():
         response = fetch_response()
         print(response)
 
+class ViewAction(ListitAction):
+
+    def __init__(self, view_id):
+        this.view_id = view_id
+
+    def build_uri():
+        return super(ViewAction, self).build_url() + "/by_id/" + this.view 
 
 class CommentsAction(ListitAction):
 
