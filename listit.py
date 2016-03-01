@@ -24,7 +24,9 @@ if args.browser:
     action = BrowserAction(args.browser)
 if args.comments: 
     action = CommentsAction(args.comments)
-if not args.sr and not args.view and not args.browser and not args.comments:
+if args.ct:
+    action = CommentTree(args.ct)
+if not args.sr and not args.view and not args.browser and not args.comments and not args.ct:
     action = ListitAction()
 
 action.execute()

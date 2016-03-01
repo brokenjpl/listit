@@ -1,6 +1,7 @@
 from tabulate import tabulate
 import os.path
 import json
+import pprint
 from tabulate import tabulate
 import webbrowser
 from colorama import init, Fore, Style
@@ -75,11 +76,24 @@ class CommentsAction(ListitAction):
     def output(self, data):
         list=[]
         print("-----------------------------------------------------------------------------------------------")
-        for child in data[1]['data']['children'][:3]:
+        for child in data[1]['data']['children'][:5]:
             print(Fore.YELLOW + "[" + child['data']['name'] + "] [score: " + str(child['data']['score']) + "] [replies: " + str(len(child['data']['replies'])) +"]" + Style.RESET_ALL)
             print(child['data']['body'])
             print("-----------------------------------------------------------------------------------------------")
         print("")
+
+class CommentTree(ListitAction):
+    
+    def __init__(self, comment_id):
+        super().__init__()
+        self.comment_id = comment_id
+
+    def build_uri(self):
+        return super().build_uri() + "/api/info.json?id" + self.comment_id 
+
+    def output(self, data):
+        pprint.pprint(data)
+    
 
 '''
     Handles the viewing of a post
@@ -94,11 +108,21 @@ class ViewAction(ListitAction):
         return super().build_uri() + "/by_id/" + self.view_id 
 
     def output(self, data):
-        data = super().fetch_response();
+        #pprint.pprint(data)
         print("------------------------------------------------------------------------")
         print(data['data']['children'][0]['data']['title'])
         print("------------------------------------------------------------------------")
         print(data['data']['children'][0]['data']['selftext'])
+
+    def execute(self):
+        data = super().fetch_response()
+        #if text only, output to CL
+        if data['data']['children'][0]['data']['domain'].startswith('self.'):
+            self.output(data)
+        #open browser for anything else
+        else:
+            webbrowser.open(data['data']['children'][0]['data']['url'])
+
 
 '''
     Handles explicitly opening a post in the browser
@@ -114,7 +138,7 @@ class BrowserAction(ListitAction):
 
     def execute(self):
         data = self.fetch_response()
-        webbrowser.open_new_tab('http://reddit.com' + data['data']['children'][0]['data']['permalink'])
+        webbrowser.open('http://reddit.com' + data['data']['children'][0]['data']['permalink'])
 
 '''
     Handles viewing a specific subreddit

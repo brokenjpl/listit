@@ -1,2 +1,3 @@
 output.txt
 actions/__pycache__
+*.swp
